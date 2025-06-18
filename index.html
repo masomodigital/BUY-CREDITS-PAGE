@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buy SMS Credits</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: green;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Buy SMS Credits</h2>
+
+  <div class="form-group">
+    <label for="nationalId">National ID</label>
+    <input type="text" id="nationalId" required>
+  </div>
+
+  <div class="form-group">
+    <label for="promoCode">Promo Code (optional)</label>
+    <input type="text" id="promoCode">
+  </div>
+
+  <div class="form-group">
+    <label for="amount">Amount (Minimum KSh 10)</label>
+    <input type="number" id="amount" min="10" required>
+  </div>
+
+  <button onclick="proceedToPhone()">Proceed</button>
+
+  <div id="phonePrompt" class="hidden">
+    <div class="form-group">
+      <label for="phoneNumber">Enter M-Pesa Number</label>
+      <input type="tel" id="phoneNumber" placeholder="07XXXXXXXX" required>
+    </div>
+    <button onclick="makePayment()">Pay Now</button>
+  </div>
+
+  <p id="status" style="margin-top: 20px; font-weight: bold;"></p>
+
+  <script>
+    function proceedToPhone() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      if (isNaN(amount) || amount < 10) {
+        alert("Minimum amount is KSh 10.");
+        return;
+      }
+      document.getElementById("phonePrompt").classList.remove("hidden");
+    }
+
+    function makePayment() {
+      const nationalId = document.getElementById("nationalId").value.trim();
+      const promoCode = document.getElementById("promoCode").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const phoneNumber = document.getElementById("phoneNumber").value.trim();
+
+      if (!nationalId || !amount || !phoneNumber) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      document.getElementById("status").textContent = "Processing...";
+
+      fetch("https://script.google.com/macros/s/AKfycbzIpGgxTe2Y-fQleRg9UyMhzFoEBh7Pl9QWtyqqqZC-RIjd2bNV94Om6Q1a2gycIZ0oAQ/exec", {
+        method: "POST",
+        body: JSON.stringify({ nationalId, promoCode, amount, phoneNumber }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.status === "success") {
+          document.getElementById("status").textContent = "STK Push sent. Enter your M-Pesa PIN to complete the payment.";
+        } else {
+          document.getElementById("status").textContent = "Error: " + res.message;
+        }
+      })
+      .catch(err => {
+        document.getElementById("status").textContent = "Request failed. Try again.";
+        console.error(err);
+      });
+    }
+  </script>
+
+</body>
+</html>
