@@ -89,7 +89,11 @@
 
       document.getElementById("status").textContent = "Processing...";
 
-      fetch("https://script.google.com/macros/s/AKfycbzIpGgxTe2Y-fQleRg9UyMhzFoEBh7Pl9QWtyqqqZC-RIjd2bNV94Om6Q1a2gycIZ0oAQ/exec", {
+      // Use corsproxy.io to bypass CORS during development/testing ONLY
+      const proxyUrl = "https://corsproxy.io/?";
+      const targetUrl = "https://script.google.com/macros/s/AKfycbzIpGgxTe2Y-fQleRg9UyMhzFoEBh7Pl9QWtyqqqZC-RIjd2bNV94Om6Q1a2gycIZ0oAQ/exec";
+
+      fetch(proxyUrl + encodeURIComponent(targetUrl), {
         method: "POST",
         body: JSON.stringify({ nationalId, promoCode, amount, phoneNumber }),
         headers: {
