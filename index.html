@@ -1,63 +1,90 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
+    <base target="_top" />
     <style>
-      body { font-family: Arial; padding: 20px; }
-      input, button { display: block; margin: 10px 0; padding: 8px; width: 100%; max-width: 400px; }
-      .success { color: green; }
-      .error { color: red; }
+      body {
+        font-family: Arial;
+        padding: 20px;
+      }
+      input,
+      button {
+        display: block;
+        margin: 10px 0;
+        padding: 8px;
+        width: 100%;
+        max-width: 400px;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
     </style>
   </head>
   <body>
     <h2>Buy SMS Credits via Mpesa</h2>
 
     <label>National ID:</label>
-    <input type="text" id="nationalId" required>
+    <input type="text" id="nationalId" required />
 
     <label>Amount (Min 10 KSh):</label>
-    <input type="number" id="amount" min="10" required>
+    <input type="number" id="amount" min="10" required />
 
     <label>Promo Code (optional):</label>
-    <input type="text" id="promoCode">
+    <input type="text" id="promoCode" />
 
     <label>Mpesa Number:</label>
-    <input type="tel" id="mpesaNumber" required>
+    <input type="tel" id="mpesaNumber" required />
 
     <button onclick="payNow()">Pay Now</button>
 
     <p id="responseMsg"></p>
 
     <script>
-      function payNow() {
-        const nationalId = document.getElementById('nationalId').value.trim();
-        const amount = parseFloat(document.getElementById('amount').value);
-        const promoCode = document.getElementById('promoCode').value.trim();
-        const mpesaNumber = document.getElementById('mpesaNumber').value.trim();
+      async function payNow() {
+        const nationalId = document.getElementById("nationalId").value.trim();
+        const amount = parseFloat(document.getElementById("amount").value);
+        const promoCode = document.getElementById("promoCode").value.trim();
+        const mpesaNumber = document.getElementById("mpesaNumber").value.trim();
 
-        document.getElementById('responseMsg').innerText = 'Processing...';
+        const msgEl = document.getElementById("responseMsg");
+        msgEl.innerText = "Processing...";
+        msgEl.className = "";
 
-        // Call the deployed Google Apps Script web app endpoint
-        fetch('https://script.google.com/macros/s/AKfycbz8olHuWB8My3EiecSDzQFyhzAlKEMOF6J92N3cEnPfF8aCsfyv1704eyCYSh5xaSf-rQ/exec', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ nationalId, amount, promoCode, mpesaNumber })
-        })
-        .then(res => res.json())
-        .then(response => {
-          const msgEl = document.getElementById('responseMsg');
-          msgEl.innerText = response.message;
-          msgEl.className = response.success ? 'success' : 'error';
-        })
-        .catch(() => {
-          const msgEl = document.getElementById('responseMsg');
-          msgEl.innerText = 'An error occurred. Please try again.';
-          msgEl.className = 'error';
-        });
+        if (!nationalId || !mpesaNumber || isNaN(amount) || amount < 10) {
+          msgEl.innerText = "Please fill all required fields correctly.";
+          msgEl.className = "error";
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            "https://script.google.com/macros/s/AKfycbz8olHuWB8My3EiecSDzQFyhzAlKEMOF6J92N3cEnPfF8aCsfyv1704eyCYSh5xaSf-rQ/exec",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ nationalId, amount, promoCode, mpesaNumber }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          msgEl.innerText = result.message || "No response message.";
+          msgEl.className = result.success ? "success" : "error";
+        } catch (error) {
+          msgEl.innerText = "An error occurred. Please try again.";
+          msgEl.className = "error";
+          console.error("Fetch error:", error);
+        }
       }
     </script>
   </body>
 </html>
-
