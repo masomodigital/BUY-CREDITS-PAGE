@@ -2,84 +2,62 @@
 <html>
   <head>
     <base target="_top">
-    <title>Buy SMS Credits via Mpesa</title>
     <style>
       body { font-family: Arial; padding: 20px; }
       input, button { display: block; margin: 10px 0; padding: 8px; width: 100%; max-width: 400px; }
       .success { color: green; }
       .error { color: red; }
-      /* Optional: Add some basic styling for better UX */
-      button:disabled {
-          background-color: #cccccc;
-          cursor: not-allowed;
-      }
     </style>
   </head>
   <body>
     <h2>Buy SMS Credits via Mpesa</h2>
 
-    <label for="nationalId">National ID:</label>
+    <label>National ID:</label>
     <input type="text" id="nationalId" required>
 
-    <label for="amount">Amount (Min 10 KSh):</label>
+    <label>Amount (Min 10 KSh):</label>
     <input type="number" id="amount" min="10" required>
 
-    <label for="promoCode">Promo Code (optional):</label>
+    <label>Promo Code (optional):</label>
     <input type="text" id="promoCode">
 
-    <label for="mpesaNumber">Mpesa Number:</label>
+    <label>Mpesa Number:</label>
     <input type="tel" id="mpesaNumber" required>
 
-    <button id="payButton" onclick="payNow()">Pay Now</button>
+    <button onclick="payNow()">Pay Now</button>
 
     <p id="responseMsg"></p>
 
     <script>
-      // IMPORTANT: Replace this with your actual deployed Google Apps Script Web App URL
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz8olHuWB8My3EiecSDzQFyhzAlKEMOF6J92N3cEnPfF8aCsfyv1704eyCYSh5xaSf-rQ/exec';
-
-      async function payNow() {
+      function payNow() {
         const nationalId = document.getElementById('nationalId').value.trim();
         const amount = parseFloat(document.getElementById('amount').value);
         const promoCode = document.getElementById('promoCode').value.trim();
         const mpesaNumber = document.getElementById('mpesaNumber').value.trim();
-        const responseMsgEl = document.getElementById('responseMsg');
-        const payButton = document.getElementById('payButton');
 
-        // Basic client-side validation
-        if (!nationalId || !mpesaNumber || amount < 10 || isNaN(amount)) {
-            responseMsgEl.innerText = 'Please fill all required fields and ensure amount is at least KSh 10.';
-            responseMsgEl.className = 'error';
-            return;
-        }
+        document.getElementById('responseMsg').innerText = 'Processing...';
 
-        responseMsgEl.innerText = 'Processing...';
-        responseMsgEl.className = ''; // Clear previous status class
-        payButton.disabled = true; // Disable button during processing
-
-        try {
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors', // Crucial for cross-origin requests
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ nationalId, amount, promoCode, mpesaNumber })
-            });
-
-            const result = await response.json(); // Parse the JSON response
-
-            responseMsgEl.innerText = result.message;
-            responseMsgEl.className = result.success ? 'success' : 'error';
-
-        } catch (error) {
-            console.error('Error:', error);
-            responseMsgEl.innerText = 'An unexpected error occurred. Please try again.';
-            responseMsgEl.className = 'error';
-        } finally {
-            payButton.disabled = false; // Re-enable button
-        }
+        // Call the deployed Google Apps Script web app endpoint
+        fetch('https://script.google.com/macros/s/AKfycbz8olHuWB8My3EiecSDzQFyhzAlKEMOF6J92N3cEnPfF8aCsfyv1704eyCYSh5xaSf-rQ/exec', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nationalId, amount, promoCode, mpesaNumber })
+        })
+        .then(res => res.json())
+        .then(response => {
+          const msgEl = document.getElementById('responseMsg');
+          msgEl.innerText = response.message;
+          msgEl.className = response.success ? 'success' : 'error';
+        })
+        .catch(() => {
+          const msgEl = document.getElementById('responseMsg');
+          msgEl.innerText = 'An error occurred. Please try again.';
+          msgEl.className = 'error';
+        });
       }
     </script>
   </body>
 </html>
+
