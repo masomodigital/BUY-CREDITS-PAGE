@@ -223,12 +223,11 @@
       <label for="amount">Amount (Min 10 KSh):</label>
       <input type="number" id="amount" min="10" required autocomplete="off">
 
-      <div class="promo-label-container">
-        <label for="promoCode">Promo Code (optional):</label>
-        <a href="https://masomodigital.github.io/friends-promo-code/" target="_blank" rel="noopener noreferrer">
-          <button type="button">Get Friend's Promo Code</button>
-        </a>
-      </div>
+     <div class="promo-label-container">
+  <label for="promoCode">Promo Code (automatically handled):</label>
+</div>
+<input type="text" id="promoCode" value="Handled by System" readonly style="background-color: #f3f3f3; color: #888;" />
+
       <input type="text" id="promoCode" autocomplete="off">
 
       <label for="mpesaNumber">Mpesa Number:</label>
